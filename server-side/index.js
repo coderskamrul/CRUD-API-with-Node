@@ -42,19 +42,43 @@ async function run() {
         });
 
        // GET route to fetch all user data
-       app.get('/users', async (req, res) => {
-        try {
-            const users = await usersCollection.find({}).toArray(); // Fetch all users
-            res.send(users);
-        } catch (error) {
-            console.error("Error fetching users", error);
-            res.status(500).send({ error: "Failed to fetch users" });
-        }
-    });
+      app.get('/users', async (req, res) => {
+         try {
+             const users = await usersCollection.find({}).toArray(); // Fetch all users
+             res.send(users);
+         } catch (error) {
+             console.error("Error fetching users", error);
+             res.status(500).send({ error: "Failed to fetch users" });
+         }
+      });
+
+      app.get('/update/:id', async (req, res) => {
+        const id  = req.params.id;
+        const query = { _id: new ObjectId(id) };
+        const result = await usersCollection.findOne(query);
+        res.send(result);
+  
+      })
+
+      app.put('/update/:id', async (req, res) => {
+        const id  = req.params.id;
+        const usersUp = req.body;
+        const query = { _id: new ObjectId(id) };
+        const options = {upsert : true};
+        const updatedUser = {
+          $set: {
+            name : usersUp.name,
+            email : usersUp.email
+          },
+        };
+        const result = await usersCollection.updateOne( query, updatedUser, options );
+
+        res.send(result);
+  
+      })
 
     app.delete('/users/:id', async (req, res) => {
       const id  = req.params.id;
-      console.log(id);
       const query = { _id: new ObjectId(id) };
       const result = await usersCollection.deleteOne(query);
       res.send(result);
